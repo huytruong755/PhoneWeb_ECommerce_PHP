@@ -15,6 +15,7 @@
 	</div>
 </div>
 <!-- pages-title-end -->
+ 
 <!-- cart content section start -->
 <section class="pages cart-page section-padding">
 	<div class="container">
@@ -32,9 +33,8 @@
 							</tr>
 						</thead>
 						<tbody>
-							<?php
-							if (isset($_SESSION['sanpham'])) {
-								foreach ($_SESSION['sanpham'] as $value) { ?>
+							<?php if (!empty($sanpham)): ?>
+                                <?php foreach ($sanpham as $value): ?>
 									<tr>
 										<td class="td-img text-left">
 											<a href="?act=detail&id=<?= $value['MaSP'] ?>"><img src="public/<?= $value['HinhAnh1'] ?>" alt="Add Product" /></a>
@@ -55,10 +55,21 @@
 										<td>
 											<strong><?= number_format($value['ThanhTien']) ?> VNĐ</strong>
 										</td>
-										<td><a href="?act=cart&xuli=deleteall&id=<?= $value['MaSP'] ?>"><i class="mdi mdi-close" title="Remove this product"></i></a></td>
+										<td>
+											<a href="?act=cart&xuli=deleteall&id=<?= $value['MaSP'] ?>">
+												<i class="mdi mdi-close" title="Remove this product"></i>
+											</a>
+										</td>
 									</tr>
-							<?php }
-							} ?>
+							<?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="5" class="text-center" style="padding: 30px;">
+                                        Giỏ hàng của bạn đang trống.
+                                        <a href="?act=shop">Mua sắm ngay</a>
+                                    </td>
+                                </tr>
+                            <?php endif; ?>
 						</tbody>
 					</table>
 				</div>
