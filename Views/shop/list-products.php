@@ -5,6 +5,8 @@ $data = $shop->tatca_sanpham(); // lấy toàn bộ sản phẩm
 <div class="tab-content grid-content">
 	<div class="tab-pane fade in active text-center" id="grid">
 		<?php 
+		//để render cho sản phẩm theo danh mục, trả về mảng $data -> view foreach ($data as  $value)
+		//dung $value [‘TenSP’], $value[‘DonGia’], $value[‘HinhAnh1’] để in HTML
 			if(isset($data) and $data != NULL){
 				foreach ($data as  $value) {		
 		?>
