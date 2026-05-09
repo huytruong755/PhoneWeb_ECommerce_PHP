@@ -1,11 +1,14 @@
 <?php
 require_once("Models/checkout.php");
+require_once("Models/cart.php");
 class CheckoutController
 {
     var $checkout_model;
+    var $cart_model;
     public function __construct()
     {
         $this->checkout_model = new Checkout();
+        $this->cart_model = new Cart();
     }
     function list()
     {
@@ -17,13 +20,10 @@ class CheckoutController
             for ($i = 1; $i <= count($data_danhmuc); $i++) {
                 $data_chitietDM[$i] = $this->checkout_model->chitietdanhmuc($i);
             }
-
-            $count = 0;
-            if (isset($_SESSION['sanpham'])) {
-                foreach ($_SESSION['sanpham'] as $value) {
-                    $count += $value['ThanhTien'];
-                }
-            }
+            
+            $maND = $_SESSION['login']['MaND'];
+            $sanpham = $this->cart_model->get_cart($maND);
+            $count = $this->cart_model->total_cart($maND);
             require_once('Views/index.php');
         } else {
             header('location: ?act=taikhoan');
@@ -34,11 +34,13 @@ class CheckoutController
         date_default_timezone_set('Asia/Ho_Chi_Minh');
         $ThoiGian =  date('Y-m-d H:i:s');
 
-        $count = 0;
-        if (isset($_SESSION['sanpham'])) {
-            foreach ($_SESSION['sanpham'] as $value) {
-                $count += $value['ThanhTien'];
-            }
+        $maND = $_SESSION['login']['MaND'];
+        $sanpham = $this->cart_model->get_cart($maND);
+        $count = $this->cart_model->total_cart($maND);
+        if (empty($sanpham)) {
+            setcookie('msg', 'Giỏ hàng trống', time() + 2);
+            header('location: ?act=cart');
+            exit;
         }
 
         $data = array(
@@ -47,15 +49,23 @@ class CheckoutController
             'NguoiNhan' =>    $_POST['NguoiNhan'],
             'SDT' => $_POST['SDT'],
             'DiaChi' => $_POST['DiaChi'],
-            'TongTien' => $count,
+            // đồng bộ với UI: tổng giỏ + 15,000 ship
+            'TongTien' => $count + 15000,
             'TrangThai'  =>  '0',
         );
-        try {
-            $this->checkout_model->save($data);
-        } catch (Exception $e) {
-            setcookie('msg', 'Đăng ký không thành công', time() + 2);
-            header('location: ?act=checkout');
+
+        $items = [];
+        foreach ($sanpham as $row) {
+            $items[] = [
+                'MaSP' => (int)$row['MaSP'],
+                'SoLuong' => (int)$row['SoLuong'],
+                'DonGia' => (float)$row['DonGia'],
+            ];
         }
+
+        $this->checkout_model->save($data, $items);
+
+        // nếu save thành công, sẽ redirect/exit trong model
     }
     function order_complete()
     {
@@ -66,12 +76,9 @@ class CheckoutController
         for ($i = 1; $i <= count($data_danhmuc); $i++) {
             $data_chitietDM[$i] = $this->checkout_model->chitietdanhmuc($i);
         }
-        $count = 0;
-        if (isset($_SESSION['sanpham'])) {
-            foreach ($_SESSION['sanpham'] as $value) {
-                $count += $value['ThanhTien'];
-            }
-        }
+        $maND = $_SESSION['login']['MaND'];
+        $sanpham = $this->cart_model->get_cart($maND);
+        $count = $this->cart_model->total_cart($maND);
         require_once('Views/index.php');
     }
 }
