@@ -28,6 +28,13 @@
     <span>Trang chủ</span></a>
 </li>
 <?php } ?>
+<?php if (isset($_SESSION['isLogin_Admin']) && $_SESSION['isLogin_Admin'] == true) { ?>
+<li class="nav-item">
+  <a class="nav-link" href="?mod=thongke&act=dashboard">
+    <i class="fas fa-fw fa-chart-area"></i>
+    <span>Thống kê</span></a>
+</li>
+<?php } ?>
 <!-- Nav Item - Charts -->
 <?php if (isset($_SESSION['isLogin_Admin']) && $_SESSION['isLogin_Admin'] == true) { ?>
 <li class="nav-item">
