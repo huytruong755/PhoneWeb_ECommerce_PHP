@@ -29,27 +29,29 @@ function number_format(number, decimals, dec_point, thousands_sep) {
 
 // Area Chart Example
 var ctx = document.getElementById("myAreaChart");
-var myLineChart = new Chart(ctx, {
-  type: 'line',
-  data: {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-    datasets: [{
-      label: "Earnings",
-      lineTension: 0.3,
-      backgroundColor: "rgba(78, 115, 223, 0.05)",
-      borderColor: "rgba(78, 115, 223, 1)",
-      pointRadius: 3,
-      pointBackgroundColor: "rgba(78, 115, 223, 1)",
-      pointBorderColor: "rgba(78, 115, 223, 1)",
-      pointHoverRadius: 3,
-      pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
-      pointHoverBorderColor: "rgba(78, 115, 223, 1)",
-      pointHitRadius: 10,
-      pointBorderWidth: 2,
-      data: [0, 10000, 5000, 15000, 10000, 20000, 15000, 25000, 20000, 30000, 25000, 40000],
-    }],
-  },
-  options: {
+if (ctx && typeof Chart !== 'undefined') {
+function renderRevenueChart(revenueData, year) {
+  return new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+      datasets: [{
+        label: "Doanh thu (" + year + ")",
+        lineTension: 0.3,
+        backgroundColor: "rgba(78, 115, 223, 0.05)",
+        borderColor: "rgba(78, 115, 223, 1)",
+        pointRadius: 3,
+        pointBackgroundColor: "rgba(78, 115, 223, 1)",
+        pointBorderColor: "rgba(78, 115, 223, 1)",
+        pointHoverRadius: 3,
+        pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
+        pointHoverBorderColor: "rgba(78, 115, 223, 1)",
+        pointHitRadius: 10,
+        pointBorderWidth: 2,
+        data: revenueData,
+      }],
+    },
+    options: {
     maintainAspectRatio: false,
     layout: {
       padding: {
@@ -76,9 +78,8 @@ var myLineChart = new Chart(ctx, {
         ticks: {
           maxTicksLimit: 5,
           padding: 10,
-          // Include a dollar sign in the ticks
           callback: function(value, index, values) {
-            return '$' + number_format(value);
+            return number_format(value) + ' đ';
           }
         },
         gridLines: {
@@ -110,9 +111,70 @@ var myLineChart = new Chart(ctx, {
       callbacks: {
         label: function(tooltipItem, chart) {
           var datasetLabel = chart.datasets[tooltipItem.datasetIndex].label || '';
-          return datasetLabel + ': $' + number_format(tooltipItem.yLabel);
+          return datasetLabel + ': ' + number_format(tooltipItem.yLabel) + ' đ';
         }
       }
     }
   }
+  });
+}
+
+function loadStats(onSuccess, onFail) {
+  var url = '?mod=thongke&act=data';
+  if (window.fetch) {
+    fetch(url, { credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(onSuccess)
+      .catch(onFail);
+    return;
+  }
+  if (window.jQuery && $.getJSON) {
+    $.getJSON(url, onSuccess).fail(onFail);
+    return;
+  }
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', url, true);
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState !== 4) return;
+    if (xhr.status >= 200 && xhr.status < 300) {
+      try {
+        onSuccess(JSON.parse(xhr.responseText));
+      } catch (e) {
+        onFail(e);
+      }
+    } else {
+      onFail(new Error('HTTP ' + xhr.status));
+    }
+  };
+  xhr.send();
+}
+
+// load dữ liệu từ DB (Admin endpoint)
+loadStats(function (res) {
+  var revenue = (res && res.revenueByMonth) ? res.revenueByMonth : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  var year = (res && res.year) ? res.year : new Date().getFullYear();
+  renderRevenueChart(revenue, year);
+
+  // render top products table nếu có
+  if (res && res.topProducts && document.getElementById('topProductsBody')) {
+    var tbody = document.getElementById('topProductsBody');
+    if (res.topProducts.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="3">Chưa có dữ liệu.</td></tr>';
+    } else {
+      tbody.innerHTML = res.topProducts.map(function (p) {
+        return '<tr>'
+          + '<td>' + p.MaSP + '</td>'
+          + '<td>' + (p.TenSP || '') + '</td>'
+          + '<td>' + p.soluong + '</td>'
+          + '</tr>';
+      }).join('');
+    }
+  }
+}, function () {
+  // fallback (tránh trắng biểu đồ nếu endpoint lỗi)
+  renderRevenueChart([0, 10000, 5000, 15000, 10000, 20000, 15000, 25000, 20000, 30000, 25000, 40000], new Date().getFullYear());
+  if (document.getElementById('topProductsBody')) {
+    document.getElementById('topProductsBody').innerHTML = '<tr><td colspan="3">Không tải được dữ liệu thống kê.</td></tr>';
+  }
 });
+}
