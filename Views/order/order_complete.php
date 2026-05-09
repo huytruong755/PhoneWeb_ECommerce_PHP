@@ -21,8 +21,8 @@
 		<div class="row">
 			<div class="col-xs-12 text-center">
 				<div class="complete-title">
-					<p>Cảm ơn bạn. Đơn đặt hàng của bạn đã được nhận; Đã nhận được đơn đặt hàng của bạn.</p>
-					<p>Vui Lòng Chờ Xét Duyệt</p>
+					<p>Cảm ơn bạn. Đơn đặt hàng của bạn đã được nhận.</p>
+					<p><?= isset($order_status_text) ? $order_status_text : "Vui Lòng Chờ Xét Duyệt" ?></p>
 				</div>
 			</div>
 		</div>
@@ -41,11 +41,11 @@
 								</tr>
 							</thead>
 							<tbody>
-								<?php if (isset($_SESSION['sanpham'])) {
-									foreach ($_SESSION['sanpham'] as $value) { ?>
+								<?php if (!empty($order_items)) {
+									foreach ($order_items as $value) { ?>
 										<tr>
 											<th><?= $value['TenSP'] ?></th>
-											<td><?= number_format($value['ThanhTien']) ?> VNĐ</td>
+											<td><?= number_format($value['SoLuong'] * $value['DonGia']) ?> VNĐ</td>
 										</tr>
 								<?php }
 								} ?>
@@ -57,7 +57,7 @@
 							<tfoot>
 								<tr>
 									<th>Tổng tiền</th>
-									<td><?= number_format($count + 15000) ?> VNĐ</td>
+									<td><?= isset($order) ? number_format($order['TongTien']) : '0' ?> VNĐ</td>
 								</tr>
 							</tfoot>
 						</table>
@@ -65,6 +65,24 @@
 				</div>
 			</div>
 			<div class="col-xs-12 col-sm-6">
+				<div class="order-details padding60">
+					<div class="log-title">
+						<h3><strong>CHI TIẾT ĐƠN HÀNG</strong></h3>
+					</div>
+					<div class="por-dse clearfix">
+						<ul>
+							<?php if (isset($order)) { ?>
+								<li><span>Mã đơn:<strong>:</strong></span> <?= $order['MaHD'] ?></li>
+								<li><span>Ngày đặt:<strong>:</strong></span> <?= date('d/m/Y H:i', strtotime($order['NgayLap'])) ?></li>
+								<li><span>Trạng thái:<strong>:</strong></span> 
+									<span style="color: <?= ($order['TrangThai'] == 1) ? 'green' : 'orange' ?>;">
+										<?= ($order['TrangThai'] == 1) ? '✓ Đã duyệt' : '⏱ Chờ duyệt' ?>
+									</span>
+								</li>
+							<?php } ?>
+						</ul>
+					</div>
+				</div>
 				<div class="order-details padding60">
 					<div class="log-title">
 						<h3><strong>CHI TIẾT KHÁCH HÀNG</strong></h3>
@@ -83,7 +101,7 @@
 					</div>
 					<p><?=$_SESSION['login']['DiaChi']?></p>
 					<p>Phone: <?=$_SESSION['login']['SDT']?></p>
-					<p>Email: <?=$_SESSION['login']['SDT']?></p>
+					<p>Email: <?=$_SESSION['login']['Email']?></p>
 				</div>
 			</div>
 		</div>
