@@ -127,19 +127,30 @@
                             <?php
                             $soluong = 0;
                             $thanhtien = 0;
-                            if (isset($_SESSION['sanpham'])) {
+                            $sanpham_cart = array();
+                            
+                            // Nếu user đã đăng nhập, lấy giỏ hàng từ database
+                            if (isset($_SESSION['login']['MaND'])) {
+                                require_once("Models/cart.php");
+                                $cart_model = new Cart();
+                                $sanpham_cart = $cart_model->get_cart($_SESSION['login']['MaND']);
+                                $thanhtien = $cart_model->total_cart($_SESSION['login']['MaND']);
+                                $soluong = $cart_model->count_cart($_SESSION['login']['MaND']);
+                            } else if (isset($_SESSION['sanpham'])) {
+                                // Fallback: nếu không đăng nhập, dùng session (compatibility)
                                 foreach ($_SESSION['sanpham'] as $value) {
                                     $soluong += 1;
                                     $thanhtien += $value['ThanhTien'];
                                 }
+                                $sanpham_cart = $_SESSION['sanpham'];
                             }
                             ?>
                             <i class="mdi mdi-cart"></i>
                             <?= $soluong ?> SP : <strong><?= number_format($thanhtien) ?> VNĐ</strong>
                         </a>
                         <div class="cartdrop">
-                            <?php if (isset($_SESSION['sanpham'])) {
-                                foreach ($_SESSION['sanpham'] as $value) { ?>
+                            <?php if (!empty($sanpham_cart)) {
+                                foreach ($sanpham_cart as $value) { ?>
                                     <div class="sin-itme clearfix">
                                         <a href="?act=cart&xuli=deleteall&id=<?= $value['MaSP'] ?>"><i class="mdi mdi-close"
                                                 title="Remove this product"></i></a>
@@ -150,7 +161,7 @@
                                                 <h5><?= $value['TenSP'] ?></h5>
                                             </a>
                                             <b>Số lượng: <?= $value['SoLuong'] ?></b>
-                                            <strong><?= number_format($value['ThanhTien']) ?> VNĐ</strong>
+                                            <strong><?= number_format($value['ThanhTien'] ?? ($value['SoLuong'] * $value['DonGia'])) ?> VNĐ</strong>
                                         </div>
                                     </div>
                                 <?php }
