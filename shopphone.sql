@@ -94,6 +94,20 @@ CREATE TABLE `hoadon` (
 -- --------------------------------------------------------
 
 --
+-- Cấu trúc bảng cho bảng `giohang`
+--
+
+CREATE TABLE `giohang` (
+  `MaGH` int(11) NOT NULL,
+  `MaND` int(11) NOT NULL,
+  `MaSP` int(11) NOT NULL,
+  `SoLuong` int(11) NOT NULL DEFAULT 1,
+  `ThoiGian` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=DYNAMIC;
+
+-- --------------------------------------------------------
+
+--
 -- Cấu trúc bảng cho bảng `khuyenmai`
 --
 
@@ -285,6 +299,14 @@ ALTER TABLE `danhmuc`
   ADD PRIMARY KEY (`MaDM`) USING BTREE;
 
 --
+-- Chỉ mục cho bảng `giohang`
+--
+ALTER TABLE `giohang`
+  ADD PRIMARY KEY (`MaGH`) USING BTREE,
+  ADD KEY `MaND` (`MaND`) USING BTREE,
+  ADD KEY `MaSP` (`MaSP`) USING BTREE;
+
+--
 -- Chỉ mục cho bảng `hoadon`
 --
 ALTER TABLE `hoadon`
@@ -338,6 +360,12 @@ ALTER TABLE `banner`
   MODIFY `Id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
+-- AUTO_INCREMENT cho bảng `giohang`
+--
+ALTER TABLE `giohang`
+  MODIFY `MaGH` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+
+--
 -- AUTO_INCREMENT cho bảng `hoadon`
 --
 ALTER TABLE `hoadon`
@@ -378,6 +406,13 @@ ALTER TABLE `sanpham`
 --
 
 --
+-- Các ràng buộc cho bảng `giohang`
+--
+ALTER TABLE `giohang`
+  ADD CONSTRAINT `giohang_ibfk_1` FOREIGN KEY (`MaND`) REFERENCES `nguoidung` (`MaND`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `giohang_ibfk_2` FOREIGN KEY (`MaSP`) REFERENCES `sanpham` (`MaSP`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
 -- Các ràng buộc cho bảng `chitiethoadon`
 --
 ALTER TABLE `chitiethoadon`
@@ -408,7 +443,57 @@ ALTER TABLE `nguoidung`
 ALTER TABLE `sanpham`
   ADD CONSTRAINT `sanpham_ibfk_2` FOREIGN KEY (`MaKM`) REFERENCES `khuyenmai` (`MaKM`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `sanpham_ibfk_3` FOREIGN KEY (`MaLSP`) REFERENCES `loaisanpham` (`MaLSP`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Trigger giảm số lượng tồn kho khi thêm chi tiết hóa đơn
+--
+DELIMITER $$
+DROP TRIGGER IF EXISTS `trg_giam_soluong_cthd`$$
+CREATE TRIGGER `trg_giam_soluong_cthd`
+BEFORE INSERT ON `chitiethoadon`
+FOR EACH ROW
+BEGIN
+  DECLARE v_soluong_ton INT;
+
+  SELECT `SoLuong`
+  INTO v_soluong_ton
+  FROM `sanpham`
+  WHERE `MaSP` = NEW.`MaSP`
+  FOR UPDATE;
+
+  IF v_soluong_ton IS NULL THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'San pham khong ton tai';
+  ELSEIF NEW.`SoLuong` <= 0 THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'So luong mua phai lon hon 0';
+  ELSEIF v_soluong_ton < NEW.`SoLuong` THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Khong du so luong ton kho';
+  ELSE
+    UPDATE `sanpham`
+    SET `SoLuong` = `SoLuong` - NEW.`SoLuong`
+    WHERE `MaSP` = NEW.`MaSP`;
+  END IF;
+END$$
+DELIMITER ;
+
+--
+-- Trigger hoàn kho khi xóa chi tiết hóa đơn
+--
+DELIMITER $$
+DROP TRIGGER IF EXISTS `trg_hoan_soluong_cthd`$$
+CREATE TRIGGER `trg_hoan_soluong_cthd`
+AFTER DELETE ON `chitiethoadon`
+FOR EACH ROW
+BEGIN
+  UPDATE `sanpham`
+  SET `SoLuong` = `SoLuong` + OLD.`SoLuong`
+  WHERE `MaSP` = OLD.`MaSP`;
+END$$
+DELIMITER ;
 COMMIT;
+
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
