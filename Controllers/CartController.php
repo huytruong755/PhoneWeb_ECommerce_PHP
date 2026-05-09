@@ -1,80 +1,98 @@
 <?php
 require_once("Models/cart.php");
+
 class CartController
 {
     var $cart_model;
+    
     public function __construct()
     {
         $this->cart_model = new Cart();
     }
+
+    //Hiển thị giỏ hàng
     function list_cart()
     {
         $data_danhmuc = $this->cart_model->danhmuc();
-
         $data_chitietDM = array();
-
         for ($i = 1; $i <= count($data_danhmuc); $i++) {
             $data_chitietDM[$i] = $this->cart_model->chitietdanhmuc($i);
         }
 
-        $count = 0;
-        if (isset($_SESSION['sanpham'])) {
-            foreach ($_SESSION['sanpham'] as $value) {
-                $count += $value['ThanhTien'];
-            }
+        // Phải đăng nhập mới xem được giỏ hàng
+        if (!isset($_SESSION['login']['MaND'])) {
+            header('Location: ?act=taikhoan&xuli=login');
+            exit();
         }
+
+        $maND = $_SESSION['login']['MaND'];
+        $sanpham = $this->cart_model->get_cart($maND);
+        $count   = $this->cart_model->total_cart($maND);
+
         require_once('Views/index.php');
     }
+
+    // Thêm sản phẩm vào giỏ
     function add_cart()
     {
-        $id = $_GET['id'];
-        $data = $this->cart_model->detail_sp($id);
-        $count = 0;
-        if (isset($_SESSION['sanpham'][$id])) {
-            $arr = $_SESSION['sanpham'][$id];
-            $arr['SoLuong'] = $arr['soluong'] + 1;
-            $arr['ThanhTien'] = $arr['soluong'] * $arr["DonGia"];
-            $_SESSION['sanpham'][$id] = $arr;
-        } else {
-            $arr['MaSP'] = $data['MaSP'];
-            $arr['TenSP'] = $data['TenSP'];
-            $arr['DonGia'] = $data['DonGia'];
-            $arr['SoLuong'] = 1;
-            $arr['ThanhTien'] = $data['DonGia'];
-            $arr['HinhAnh1'] = $data['HinhAnh1'];
-            $_SESSION['sanpham'][$id] = $arr;
+        if (!isset($_SESSION['login']['MaND'])) {
+            header('Location: ?act=taikhoan&xuli=login');
+            exit();
         }
 
-        foreach ($_SESSION['sanpham'] as $value) {
-            $count += $value['ThanhTien'];
-        }
+        $maND = $_SESSION['login']['MaND'];
+        $maSP = (int)$_GET['id'];
 
-        header('Location:?act=cart#dxd');
+        $this->cart_model->add_cart($maND, $maSP);
+        header('Location: ?act=cart#dxd');
+        exit();
     }
+
+    // Tăng số lượng
     function update_cart()
     {
-        $arr = $_SESSION['sanpham'][$_GET['id']];
-        $arr['SoLuong'] = $arr['SoLuong'] + 1;
-        $arr['ThanhTien'] = $arr['SoLuong'] * $arr["DonGia"];
-        $_SESSION['sanpham'][$_GET['id']] = $arr;
+        if (!isset($_SESSION['login']['MaND'])) {
+            header('Location: ?act=taikhoan&xuli=login');
+            exit();
+        }
+
+        $maND = $_SESSION['login']['MaND'];
+        $maSP = (int)$_GET['id'];
+
+        $this->cart_model->update_cart($maND, $maSP);
         header('Location: ?act=cart#dxd');
+        exit();
     }
+
+    // Giảm số lượng (nếu = 1 thì xóa)
     function delete_cart()
     {
-        $arr = $_SESSION['sanpham'][$_GET['id']];
-        if ($arr['SoLuong'] == 1) {
-            unset($_SESSION['sanpham'][$_GET['id']]);
-        } else {
-            $arr = $_SESSION['sanpham'][$_GET['id']];
-            $arr['SoLuong'] = $arr['SoLuong'] - 1;
-            $arr['ThanhTien'] = $arr['SoLuong'] * $arr["DonGia"];
-            $_SESSION['sanpham'][$_GET['id']] = $arr;
+        if (!isset($_SESSION['login']['MaND'])) {
+            header('Location: ?act=taikhoan&xuli=login');
+            exit();
         }
+
+        $maND = $_SESSION['login']['MaND'];
+        $maSP = (int)$_GET['id'];
+
+        $this->cart_model->delete_cart($maND, $maSP);
         header('Location: ?act=cart#dxd');
+        exit();
     }
+
+    // Xóa hẳn 1 sản phẩm
     function deleteall_cart()
     {
-        unset($_SESSION['sanpham'][$_GET['id']]);
+        if (!isset($_SESSION['login']['MaND'])) {
+            header('Location: ?act=taikhoan&xuli=login');
+            exit();
+        }
+
+        $maND = $_SESSION['login']['MaND'];
+        $maSP = (int)$_GET['id'];
+
+        $this->cart_model->deleteall_cart($maND, $maSP);
         header('Location: ?act=cart#dxd');
+        exit();
     }
 }
