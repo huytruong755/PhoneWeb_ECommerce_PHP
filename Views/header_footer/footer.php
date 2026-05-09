@@ -26,7 +26,7 @@
                                     </li>
                                     <li>
                                         <i class="mdi mdi-email"></i>
-                                        <p class="text-white">letrantuanquang61@gmail.com</p>
+                                        <p class="text-white">DHGIAOTHONGVANTAI@gmail.com</p>
 
                                     </li>
                                 </ul>
