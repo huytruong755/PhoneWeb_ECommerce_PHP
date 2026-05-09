@@ -57,7 +57,9 @@
             </ul>
         </div>
     </div>
-    <!-- <div class="s-side-text">
+    
+    <!-- Views/shop/category.php có phần banner dùng  $data_noibat  để hiển thị “sản phẩm quan tâm”
+    <div class="s-side-text">
         <div class="banner clearfix">
             <a href="?act=detail&id=<?=$data_noibat['MaSP']?>"><img src="./public/<?=$data_noibat['HinhAnh1']?>" alt="" /></a>
             <div class="banner-text">
