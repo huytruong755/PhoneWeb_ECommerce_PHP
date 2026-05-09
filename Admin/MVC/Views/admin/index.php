@@ -199,6 +199,16 @@
                           break;
                       }
                       break;
+                    case 'thongke':
+                      switch ($act) {
+                        case 'dashboard':
+                          require_once('MVC/Views/thongke/dashboard.php');
+                          break;
+                        default:
+                          require_once('MVC/Views/thongke/dashboard.php');
+                          break;
+                      }
+                      break;
                   }
                 } else {
                   if (isset($_SESSION['isLogin_Nhanvien']) && $_SESSION['isLogin_Nhanvien'] == true) {
@@ -269,6 +279,10 @@
                             require_once('MVC/views/khuyenmai/list.php');
                             break;
                         }
+                        break;
+                      case 'thongke':
+                        // nhân viên không vào thống kê (nếu muốn mở thì bỏ comment)
+                        require_once('MVC/Views/thongke/dashboard.php');
                         break;
                     }
                   }
