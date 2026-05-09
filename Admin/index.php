@@ -202,6 +202,21 @@ if (isset($_SESSION['isLogin_Admin']) && $_SESSION['isLogin_Admin'] == true) {
                     break;
             }
             break;
+        case 'thongke':
+            require_once('MVC/controllers/ThongkeController.php');
+            $controller_obj = new ThongkeController();
+            switch ($act) {
+                case 'dashboard':
+                    $controller_obj->dashboard();
+                    break;
+                case 'data':
+                    $controller_obj->data();
+                    break;
+                default:
+                    $controller_obj->dashboard();
+                    break;
+            }
+            break;
             case 'login':
                 require_once('MVC/controllers/LoginController.php');
                 $controller_obj = new LoginController();
