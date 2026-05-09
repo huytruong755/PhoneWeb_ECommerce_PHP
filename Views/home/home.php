@@ -9,6 +9,7 @@ $data_random = $shop->random(2); // Hàm này bạn phải tạo
 
 <!-- banner-end -->
 <!-- tab-products section start -->
+ <!-- render sản phẩm theo danh mục lên HTML -->
 <div class="tab-products single-products section-padding extra-padding-top">
     <div class="container">
         <div class="row">
