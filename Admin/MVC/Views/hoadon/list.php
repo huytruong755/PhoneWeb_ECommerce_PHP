@@ -34,6 +34,10 @@
         ?></td>
         <td>
           <a href="?mod=hoadon&act=chitiet&id=<?= $row['MaHD'] ?>" class="btn btn-success" >Xem chi tiết</a>
+          <?php if ((int)$row['TrangThai'] === 0) { ?>
+            <a href="?mod=hoadon&act=xetduyet&id=<?= $row['MaHD'] ?>" class="btn btn-primary"
+              onclick="return confirm('Duyệt hóa đơn #<?= $row['MaHD'] ?> ?');">Duyệt</a>
+          <?php } ?>
           <a href="?mod=hoadon&act=delete&id=<?= $row['MaHD'] ?>" onclick="return confirm('Bạn có thật sự muốn xóa ?');" type="button" class="btn btn-danger">Xóa</a>
         </td>
       </tr>
