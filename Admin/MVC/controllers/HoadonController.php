@@ -23,15 +23,34 @@ class HoaDonController
     }
     function xetduyet()
     {
-        $data = array(
-            'MaHD' => $_GET['id'],
-            'TrangThai' => 1,
-        );
-        try {
-            $this->hoadon_model->update($data);
-        } catch (Exception $e) {
-            setcookie('msg', 'Duyệt không thành công', time() + 2);
+        if (!isset($_GET['id'])) {
+            setcookie('msg', 'Hóa đơn không hợp lệ', time() + 2);
             header('Location: ?mod=hoadon');
+            exit;
+        }
+        
+        try {
+            $MaHD = $_GET['id'];
+            
+            // Cập nhật trạng thái hóa đơn trực tiếp (không dùng update() của Model vì nó redirect)
+            $query = "UPDATE hoadon SET TrangThai = 1 WHERE MaHD = " . (int)$MaHD;
+            if (!$this->hoadon_model->conn->query($query)) {
+                throw new Exception("Cập nhật trạng thái hóa đơn thất bại");
+            }
+            
+            // Giảm số lượng sản phẩm từ kho
+            if ($this->hoadon_model->giam_soluong_sanpham($MaHD)) {
+                setcookie('msg', 'Duyệt hóa đơn thành công và cập nhật kho', time() + 2);
+            } else {
+                setcookie('msg', 'Duyệt hóa đơn thành công nhưng cập nhật kho thất bại', time() + 2);
+            }
+            
+            header('Location: ?mod=hoadon');
+            exit;
+        } catch (Exception $e) {
+            setcookie('msg', 'Duyệt không thành công: ' . $e->getMessage(), time() + 2);
+            header('Location: ?mod=hoadon');
+            exit;
         }
     }
     function delete()
