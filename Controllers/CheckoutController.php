@@ -77,6 +77,22 @@ class CheckoutController
             $data_chitietDM[$i] = $this->checkout_model->chitietdanhmuc($i);
         }
         $maND = $_SESSION['login']['MaND'];
+        
+        // Lấy hóa đơn mới nhất của khách hàng
+        $order = $this->checkout_model->get_latest_order($maND);
+        $order_items = [];
+        $order_status_text = "Vui Lòng Chờ Xét Duyệt"; // Default text
+        
+        if ($order) {
+            $order_items = $this->checkout_model->get_order_items($order['MaHD']);
+            // Kiểm tra trạng thái hóa đơn
+            if ($order['TrangThai'] == 1) {
+                $order_status_text = "Đơn hàng của bạn đã được duyệt. Cảm ơn bạn đã mua sắm!";
+            } else {
+                $order_status_text = "Vui Lòng Chờ Xét Duyệt";
+            }
+        }
+        
         $sanpham = $this->cart_model->get_cart($maND);
         $count = $this->cart_model->total_cart($maND);
         require_once('Views/index.php');

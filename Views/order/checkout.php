@@ -52,7 +52,15 @@
 								</tr>
 							</thead>
 							<tbody>
-								<?php if (isset($_SESSION['sanpham'])) {
+								<?php if (!empty($sanpham)) {
+									foreach ($sanpham as $value) { ?>
+								<tr>
+									<th><?=$value['TenSP']?></th>
+									<td><?=number_format($value['ThanhTien'])?> VNĐ</td>
+								</tr>
+						<?php }
+								} else if (isset($_SESSION['sanpham'])) {
+									// Compatibility với session (fallback)
 									foreach ($_SESSION['sanpham'] as $value) { ?>
 								<tr>
 									<th><?=$value['TenSP']?></th>

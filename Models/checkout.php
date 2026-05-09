@@ -72,4 +72,29 @@ class Checkout extends Model
       exit;
     }
   }
+  
+  // Lấy hóa đơn mới nhất của khách hàng
+  function get_latest_order($maND)
+  {
+    $maND = (int)$maND;
+    $query = "SELECT * FROM HoaDon WHERE MaND = $maND ORDER BY MaHD DESC LIMIT 1";
+    $result = $this->conn->query($query);
+    return $result->fetch_assoc();
+  }
+  
+  // Lấy chi tiết sản phẩm của hóa đơn
+  function get_order_items($maHD)
+  {
+    $maHD = (int)$maHD;
+    $query = "SELECT ct.*, sp.TenSP, sp.HinhAnh1 
+              FROM chitiethoadon ct
+              JOIN sanpham sp ON ct.MaSP = sp.MaSP
+              WHERE ct.MaHD = $maHD";
+    $result = $this->conn->query($query);
+    $data = [];
+    while ($row = $result->fetch_assoc()) {
+      $data[] = $row;
+    }
+    return $data;
+  }
 }
