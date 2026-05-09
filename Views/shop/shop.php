@@ -21,6 +21,8 @@
 		<div class="row">
 			<!-- Category-left -->
 			<div class="col-xs-12 col-sm-4 col-md-3">
+				<!-- Trong trang shop,  Views/shop/shop.php bao gồm category.php. 
+				Và Views/shop/category.php có phần banner dùng  $data_noibat  để hiển thị “sản phẩm quan tâm” -->
 				<?php require_once("category.php") ?>
 			</div>
 			<div class="col-xs-12 col-sm-8 col-md-9">
