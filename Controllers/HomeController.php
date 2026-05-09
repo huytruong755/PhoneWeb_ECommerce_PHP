@@ -10,6 +10,8 @@ class HomeController
     
     function list()
     {
+        // Ở trang home, Controller lấy các danh sách sản phẩm theo MaDM (và sắp xếp ThoiGian DESC nên “mới nhất” đứng trước). 
+        // Thấy đc HomeController gọi sanpham_danhmuc(...)
         $data_danhmuc = $this->home_model->danhmuc();
 
         $data_chitietDM = array();
