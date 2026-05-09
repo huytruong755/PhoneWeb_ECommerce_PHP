@@ -51,10 +51,12 @@ class Shop extends Model
 
         return $data;
     }
+    //Function sanpham_noibat() và chạy SQL để lấy 1 sản phẩm bấn nhiều nhất
     function sanpham_noibat()
     {
         $query = "SELECT * FROM sanpham WHERE MaSP = (SELECT MaSP sp FROM chitiethoadon GROUP BY MaSP ORDER BY COUNT(MaSP) DESC LIMIT 1)";
 
+        //kết nối db, chạy câu lệnh SQL, lấy kết quả, lấy 1 dòng đầu tiên dưới dạng associative array 
         return $this->conn->query($query)->fetch_assoc();
     }
     function count_sp()
